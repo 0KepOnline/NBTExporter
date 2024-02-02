@@ -1,0 +1,15 @@
+[
+    {
+        "modid": "nbtexporter",
+        "name": "NBT Exporter",
+        "description": "Export any items as NBT files!",
+        "version": "${version}",
+        "mcversion": "${mcversion}",
+        "url": "https://scenariopla.net",
+        "updateUrl": "",
+        "authorList": ["ScenarioPlanet"],
+        "logoFile": "nbtexporter_logo_128x128.png",
+        "screenshots": [],
+        "dependencies": []
+    }
+]
