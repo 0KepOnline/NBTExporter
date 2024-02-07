@@ -2,7 +2,7 @@ commands.nbtexporter.global.permissionError=You must be in creative mode for tha
 commands.nbtexporter.global.heldItemError.empty=The item is not selected
 commands.nbtexporter.global.syntaxError.stringTermination=Unterminated filename: %s
 
-commands.nbtexporter.exportnbt.usage=/exportnbt ["filename"]
+commands.nbtexporter.exportnbt.usage=/exportnbt [filename]
 commands.nbtexporter.exportnbt.nbtError.empty=NBT of this item is empty
 commands.nbtexporter.exportnbt.ioError.writeAccess=Unable to write "%s"
 commands.nbtexporter.exportnbt.ioError.write=Error on writing "%s"

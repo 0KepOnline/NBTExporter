@@ -19,10 +19,12 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.GameRules;
 
-import net.scenariopla.nbtexporter.NBTExporterReference;
+import net.scenariopla.nbtexporter.NBTExporter.Reference;
 import net.scenariopla.nbtexporter.init.DirectoryInit;
 
 public class CommandExportItemStackNBT extends CommandNBTExporter {
+    private static final String FILE_EXTENSION = ".nbt";
+    
     @Override
     public String getName() {
         return "exportnbt";
@@ -39,6 +41,39 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
         return true;
     }
     
+    private enum ExportItemStackNBTExceptions {
+        SYNTAX_ERROR_USAGE,
+        SYNTAX_ERROR_STRING_TERMINATION,
+        
+        HELD_ITEM_ERROR_EMPTY,
+        NBT_ERROR_EMPTY,
+        IO_ERROR_WRITE,
+        IO_ERROR_WRITE_ACCESS
+    }
+    
+    private static CommandException exceptions(ExportItemStackNBTExceptions exception) {
+        return exceptions(exception, new Object[0]);
+    }
+    
+    private static CommandException exceptions(ExportItemStackNBTExceptions exception, Object[] args) {
+        switch (exception) {
+        case SYNTAX_ERROR_USAGE:
+            return new WrongUsageException("commands.nbtexporter.global.usage", args);
+        case SYNTAX_ERROR_STRING_TERMINATION:
+            return new SyntaxErrorException("commands.nbtexporter.exportnbt.syntaxError.stringTermination", args);
+        
+        case HELD_ITEM_ERROR_EMPTY:
+            return new CommandException("commands.nbtexporter.global.heldItemError.empty", args);
+        case NBT_ERROR_EMPTY:
+            return new CommandException("commands.nbtexporter.exportnbt.nbtError.empty", args);
+        case IO_ERROR_WRITE:
+            return new CommandException("commands.nbtexporter.exportnbt.ioError.write", args);
+        case IO_ERROR_WRITE_ACCESS:
+            return new CommandException("commands.nbtexporter.exportnbt.ioError.writeAccess", args);
+        }
+        return null;
+    }
+    
     @Override
     public void execute(MinecraftServer server,
                         ICommandSender sender,
@@ -52,50 +87,45 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
                     if (argsString.substring(1).contains("\"")) {
                         filename = argsString.substring(1, argsString.substring(1).indexOf('\"') + 1);
                     } else {
-                        throw new SyntaxErrorException(
-                                      "commands.nbtexporter.exportnbt.syntaxError.stringTermination",
-                                      new Object[] {argsString}
-                                  );
+                        throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_STRING_TERMINATION,
+                                         new Object[] {argsString});
                     }
                 } else {
                     if (args.length == 1) {
                         filename = argsString;
                     } else {
-                        throw new WrongUsageException("commands.nbtexporter.exportnbt.usage",
-                                                      new Object[0]);
+                        throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_USAGE);
                     }
                 }
             }
             
             if (filename == null) {
-                filename = NBTExporterReference.DATE_FORMAT.format(new Date());
+                filename = Reference.DATE_FORMAT.format(new Date());
             } else {
-                filename = replaceIllegalCharacters(trimExtension(filename, ".nbt"), '_');
+                filename = replaceIllegalCharacters(trimExtension(filename, FILE_EXTENSION), '_');
             }
             
             final EntityPlayer player = (EntityPlayer) sender;
             final ItemStack heldItem = player.getHeldItemMainhand();
             if (heldItem.isEmpty()) {
-                throw new CommandException("commands.nbtexporter.global.heldItemError.empty",
-                                           new Object[0]);
+                throw exceptions(ExportItemStackNBTExceptions.HELD_ITEM_ERROR_EMPTY);
             }
             
             final NBTTagCompound nbtTagCompound = heldItem.getTagCompound();
             if (nbtTagCompound == null) {
-                throw new CommandException("commands.nbtexporter.exportnbt.nbtError.empty",
-                                           new Object[0]);
+                throw exceptions(ExportItemStackNBTExceptions.NBT_ERROR_EMPTY);
             }
-            final GameRules gameRules = NBTExporterReference.MINECRAFT.world.getGameRules();
+            final GameRules gameRules = Reference.MINECRAFT.world.getGameRules();
             
             for (File existingFile : modOutputFiles) {
-                if (existingFile.getName().equals(filename + ".nbt")) {
+                if (existingFile.getName().equals(filename + FILE_EXTENSION)) {
                     int namesakeFilesCount = 1;
                     for (File existingFileNamesake : modOutputFiles) {
                         try {
                             if (existingFileNamesake.getName().startsWith(filename + "_")) {
                                 int namesakeFileCountSuffix = Integer.parseInt(existingFileNamesake.getName()
                                                                                .replace(filename + "_", "")
-                                                                               .replace(".nbt", ""));
+                                                                               .replace(FILE_EXTENSION, ""));
                                 if (namesakeFileCountSuffix >= namesakeFilesCount) {
                                     namesakeFilesCount = namesakeFileCountSuffix + 1;
                                 }
@@ -111,13 +141,13 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
                     break;
                 }
             }
-            final String filenameWithExtension = filename + ".nbt";
+            final String filenameWithExtension = filename + FILE_EXTENSION;
             
             final File outputFile = new File(DirectoryInit.modDir, filenameWithExtension);
             try {
                 if (outputFile.exists() && !outputFile.canWrite()) {
-                    throw new CommandException("commands.nbtexporter.exportnbt.ioError.writeAccess",
-                                               new Object[] {filenameWithExtension});
+                    throw exceptions(ExportItemStackNBTExceptions.IO_ERROR_WRITE_ACCESS,
+                                     new Object[] {filenameWithExtension});
                 }
                 outputFile.createNewFile();
                 OutputStream outputStream = null;
@@ -136,8 +166,8 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
                 }
             } catch (Exception e) {
                 e.printStackTrace();
-                throw new CommandException("commands.nbtexporter.exportnbt.ioError.write",
-                                           new Object[] {filenameWithExtension});
+                throw exceptions(ExportItemStackNBTExceptions.IO_ERROR_WRITE,
+                                 new Object[] {filenameWithExtension});
             }
         }
     }

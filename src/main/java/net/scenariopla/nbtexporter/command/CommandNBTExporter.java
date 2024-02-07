@@ -4,7 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.command.CommandBase;
 
-import net.scenariopla.nbtexporter.NBTExporterReference;
+import net.scenariopla.nbtexporter.NBTExporter.Reference;
 
 public abstract class CommandNBTExporter extends CommandBase {
     public static boolean hasExtension(final String originalString,
@@ -29,7 +29,7 @@ public abstract class CommandNBTExporter extends CommandBase {
     
     public static String replaceIllegalCharacters(final String nameWithExtension,
                                                   final char replacedChar) {
-        return NBTExporterReference.FILE_NAME_CHAR_REPLACE_PATTERN.matcher(nameWithExtension)
-                                                                  .replaceAll(String.valueOf(replacedChar));
+        return Reference.FILE_NAME_CHAR_REPLACE_PATTERN.matcher(nameWithExtension)
+                                                       .replaceAll(String.valueOf(replacedChar));
     }
 }
