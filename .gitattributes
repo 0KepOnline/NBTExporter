@@ -1,0 +1,13 @@
+*.gitattributes text eol=lf
+*.gitignore text eol=lf
+*.gradle text eol=lf
+*.info text eol=lf
+*.java text eol=lf
+*.json text eol=lf
+*.lang text eol=lf
+*.mcmeta text eol=lf
+*.md text eol=lf
+*.properties text eol=lf
+LICENSE text eol=lf
+gradlew text eol=lf
+gradlew.bat text eol=crlf

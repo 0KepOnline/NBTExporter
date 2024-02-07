@@ -1,0 +1,15 @@
+modLoader="javafml"
+loaderVersion="${loader_version_range}"
+license="${mod_license}"
+issueTrackerURL="https://github.com/0KepOnline/NBTExporter/issues"
+
+[[mods]]
+modId="${mod_id}"
+version="${minecraft_version}-${mod_version}"
+displayName="${mod_name}"
+updateJSONURL="https://scenariopla.net/nbtexporter-updates.json"
+displayURL="https://github.com/0KepOnline/NBTExporter"
+logoFile="nbtexporter_logo_128x128.png"
+authors="${mod_authors}"
+displayTest="IGNORE_ALL_VERSION"
+description='''${mod_description}'''
