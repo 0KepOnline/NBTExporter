@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${minecraft_version}-${mod_version}-fabric",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "sources": "https://github.com/0KepOnline/NBTExporter"
+  },
+  "license": "${mod_license}",
+  "icon": "nbtexporter_logo_128x128.png",
+  "environment": "*",
+  "entrypoints": {
+    "client": [
+      "${mod_group_id}.NBTExporter"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=0.15.0",
+    "minecraft": "~1.19",
+    "java": ">=17",
+    "fabric": "*"
+  }
+}
