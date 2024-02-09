@@ -4,8 +4,13 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.util.Date;
+import java.util.List;
+
+import javax.annotation.Nullable;
 
 import org.apache.commons.io.IOUtils;
+
+import com.google.common.collect.Lists;
 
 import net.minecraft.command.CommandException;
 import net.minecraft.command.ICommandSender;
@@ -16,10 +21,11 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.world.GameRules;
 
-import net.scenariopla.nbtexporter.NBTExporter.Reference;
+import net.scenariopla.nbtexporter.NBTExporter;
 import net.scenariopla.nbtexporter.init.DirectoryInit;
 
 public class CommandExportItemStackNBT extends CommandNBTExporter {
@@ -55,12 +61,13 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
         return exceptions(exception, new Object[0]);
     }
     
-    private static CommandException exceptions(ExportItemStackNBTExceptions exception, Object[] args) {
+    private static CommandException exceptions(ExportItemStackNBTExceptions exception,
+                                               Object[] args) {
         switch (exception) {
         case SYNTAX_ERROR_USAGE:
             return new WrongUsageException("commands.nbtexporter.global.usage", args);
         case SYNTAX_ERROR_STRING_TERMINATION:
-            return new SyntaxErrorException("commands.nbtexporter.exportnbt.syntaxError.stringTermination", args);
+            return new SyntaxErrorException("commands.nbtexporter.global.syntaxError.stringTermination", args);
         
         case HELD_ITEM_ERROR_EMPTY:
             return new CommandException("commands.nbtexporter.global.heldItemError.empty", args);
@@ -72,6 +79,41 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
             return new CommandException("commands.nbtexporter.exportnbt.ioError.writeAccess", args);
         }
         return null;
+    }
+    
+    @Override
+    public List<String> getTabCompletions(MinecraftServer server,
+                                          ICommandSender sender,
+                                          String[] args,
+                                          @Nullable BlockPos targetPos) {
+        if (sender instanceof EntityPlayer) {
+            final ItemStack heldItem = ((EntityPlayer) sender).getHeldItemMainhand();
+            if (!heldItem.isEmpty()) {
+                final String heldItemName = heldItem.getDisplayName();
+                final boolean heldItemNameHasSpaces = heldItemName.contains(" ");
+                if (args.length == 1) {
+                    if (heldItemNameHasSpaces) {
+                        return Lists.newArrayList('"' + heldItemName + '"');
+                    }
+                    return Lists.newArrayList(heldItemName);
+                } else if (args.length > 1 && heldItemNameHasSpaces) {
+                    String[] argsExpected = ('"' + heldItemName + '"').split(" ");
+                    if (args.length <= argsExpected.length) {
+                        for (int argNum = 0; argNum < args.length - 1; argNum++) {
+                            if (!args[argNum].equals(argsExpected[argNum])) {
+                                return Lists.newArrayList();
+                            }
+                        }
+                        final StringBuilder stringBuilder = new StringBuilder();
+                        for (int argNum = args.length - 1; argNum < argsExpected.length; argNum++) {
+                            stringBuilder.append(argsExpected[argNum]).append(" ");
+                        }
+                        return Lists.newArrayList(stringBuilder.toString().trim());
+                    }
+                }
+            }
+        }
+        return Lists.newArrayList();
     }
     
     @Override
@@ -90,17 +132,15 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
                         throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_STRING_TERMINATION,
                                          new Object[] {argsString});
                     }
+                } else if (args.length == 1) {
+                    filename = argsString;
                 } else {
-                    if (args.length == 1) {
-                        filename = argsString;
-                    } else {
-                        throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_USAGE);
-                    }
+                    throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_USAGE);
                 }
             }
             
             if (filename == null) {
-                filename = Reference.DATE_FORMAT.format(new Date());
+                filename = NBTExporter.Reference.DATE_FORMAT.format(new Date());
             } else {
                 filename = replaceIllegalCharacters(trimExtension(filename, FILE_EXTENSION), '_');
             }
@@ -115,7 +155,7 @@ public class CommandExportItemStackNBT extends CommandNBTExporter {
             if (nbtTagCompound == null) {
                 throw exceptions(ExportItemStackNBTExceptions.NBT_ERROR_EMPTY);
             }
-            final GameRules gameRules = Reference.MINECRAFT.world.getGameRules();
+            final GameRules gameRules = NBTExporter.Reference.MINECRAFT.world.getGameRules();
             
             for (File existingFile : modOutputFiles) {
                 if (existingFile.getName().equals(filename + FILE_EXTENSION)) {

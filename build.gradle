@@ -13,7 +13,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven-publish'
 
 def mcversion = '1.12.2'
-def modversion = '1.1'
+def modversion = '1.2'
 def id = 'nbtexporter'
 def author = 'scenarioplanet'
 
