@@ -23,7 +23,7 @@ public class NBTExporter {
     public class Reference {
         public static final String MODID = "nbtexporter";
         public static final String NAME = "NBT Exporter";
-        public static final String VERSION = "1.1";
+        public static final String VERSION = "1.2";
         
         public static final String MODDIR = MODID;
         

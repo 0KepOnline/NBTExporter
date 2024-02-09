@@ -46,7 +46,7 @@ public class ExportItemStackNBTCommand extends NBTExporterCommand {
                    );
         case SYNTAX_ERROR_STRING_TERMINATION:
             return new SimpleCommandExceptionType(
-                       Component.translatable("commands.nbtexporter.exportnbt.syntaxError.stringTermination", args)
+                       Component.translatable("commands.nbtexporter.global.syntaxError.stringTermination", args)
                    );
         case HELD_ITEM_ERROR_EMPTY:
             return new SimpleCommandExceptionType(
@@ -110,12 +110,10 @@ public class ExportItemStackNBTCommand extends NBTExporterCommand {
                     throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_STRING_TERMINATION,
                                      new Object[] {argsString}).create();
                 }
+            } else if (!argsString.contains(" ")) {
+                filename = argsString;
             } else {
-                if (!argsString.contains(" ")) {
-                    filename = argsString;
-                } else {
-                    throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_USAGE).create();
-                }
+                throw exceptions(ExportItemStackNBTExceptions.SYNTAX_ERROR_USAGE).create();
             }
         }
         
